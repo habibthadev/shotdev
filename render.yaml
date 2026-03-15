@@ -10,5 +10,8 @@ services:
         value: production
       - key: PORT
         value: 3000
+      - key: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD
+        value: 'true'
       - key: CHROMIUM_PATH
+        value: /usr/bin/chromium-browser
         scope: run_and_build
