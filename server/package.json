@@ -6,7 +6,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsup",
     "start": "node dist/index.js",
-    "postinstall": "playwright install chromium --with-deps || true"
+    "postinstall": "if [ \"$NODE_ENV\" != \"production\" ]; then playwright install chromium --with-deps || true; fi"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
@@ -14,7 +14,7 @@
     "dotenv": "^17.3.1",
     "hono": "^4.6.0",
     "hono-rate-limiter": "^0.4.2",
-    "playwright": "^1.49.0",
+    "playwright-core": "^1.49.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

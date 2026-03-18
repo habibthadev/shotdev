@@ -13,7 +13,15 @@ const LAUNCH_ARGS = [
   '--disable-default-apps',
 ]
 
-const executablePath = process.env.CHROMIUM_PATH || undefined
+const getChromiumPath = () => {
+  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH
+  if (process.env.RENDER) {
+    return '/usr/bin/chromium-browser'
+  }
+  return undefined
+}
+
+const executablePath = getChromiumPath()
 const isUnsupportedPlatform = () => process.platform === 'android' && !executablePath
 
 const loadPlaywright = async () => {
@@ -21,7 +29,7 @@ const loadPlaywright = async () => {
     throw new Error('Playwright is not supported on this platform and CHROMIUM_PATH is not set')
   }
   if (!chromiumModule) {
-    const pw = await import('playwright')
+    const pw = await import('playwright-core')
     chromiumModule = pw.chromium
   }
   return chromiumModule
