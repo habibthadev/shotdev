@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vite/
+.vinxi/
+.output/
+.env
+.env.local
+test-screenshots/
+*.log
+.DS_Store

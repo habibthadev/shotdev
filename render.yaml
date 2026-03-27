@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: shots
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: |
+      pnpm install
+      npx playwright install --with-deps chromium
+      pnpm build
+    startCommand: node dist/server/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        value: /opt/render/.cache/ms-playwright

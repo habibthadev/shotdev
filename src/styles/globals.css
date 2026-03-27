@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('/fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('/fonts/SFPRODISPLAYMEDIUM.OTF') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('/fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-family-sf: 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  --color-label-primary: rgba(0, 0, 0, 0.85);
+  --color-label-secondary: rgba(0, 0, 0, 0.55);
+  --color-label-tertiary: rgba(0, 0, 0, 0.3);
+  --color-separator: rgba(0, 0, 0, 0.08);
+  
+  --color-system-blue: #007AFF;
+  --color-system-blue-hover: #0062CC;
+  --color-system-green: #34C759;
+  --color-system-red: #FF3B30;
+  
+  --color-fill-primary: rgba(120, 120, 128, 0.12);
+  --color-fill-secondary: rgba(120, 120, 128, 0.08);
+  --color-fill-tertiary: rgba(118, 118, 128, 0.12);
+  
+  --color-background-primary: #ffffff;
+  --color-background-secondary: rgba(242, 242, 247, 1);
+  --color-background-elevated: rgba(255, 255, 255, 0.85);
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-window: 0 24px 64px rgba(0, 0, 0, 0.2), 0 8px 20px rgba(0, 0, 0, 0.08);
+  
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-window: 10px;
+}
+
+*,
+*::before,
+*::after {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-sf);
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  background: var(--color-background-secondary);
+  color: var(--color-label-primary);
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+::selection {
+  background: rgba(0, 122, 255, 0.2);
+}
+
+input::placeholder {
+  color: var(--color-label-tertiary);
+}
+
+.glass-panel {
+  background: var(--color-background-elevated);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+.window-chrome {
+  box-shadow: var(--shadow-window);
+  border-radius: var(--radius-window);
+  overflow: hidden;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spinner {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-spinner {
+  animation: spinner 0.8s linear infinite;
+}
