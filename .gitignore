@@ -8,3 +8,5 @@ dist/
 test-screenshots/
 *.log
 .DS_Store
+.tanstack
+scripts/
