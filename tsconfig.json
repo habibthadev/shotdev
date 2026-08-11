@@ -19,6 +19,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "server/**/*", "vite-plugins/**/*", "nitro.config.ts", ".nitro/types/**/*"],
   "exclude": ["node_modules", ".vinxi", "dist"]
 }
