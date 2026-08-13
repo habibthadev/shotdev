@@ -12,3 +12,5 @@ test-screenshots/
 scripts/
 
 .nitro/
+.vercel/
+.nitro/

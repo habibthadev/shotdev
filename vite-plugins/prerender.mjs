@@ -1,4 +1,4 @@
-import { mkdir, readdir, copyFile, writeFile, readFile } from 'node:fs/promises'
+import { mkdir, cp, writeFile, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
@@ -49,15 +49,11 @@ console.log('wrote dist/client/sitemap.xml')
 
 const vercelStatic = join(rootDir, '.vercel', 'output', 'static')
 try {
-  const existing = await readdir(vercelStatic)
-  if (existing.length) {
-    for (const file of await readdir(clientDir)) {
-      await copyFile(join(clientDir, file), join(vercelStatic, file))
-    }
-    console.log(`mirrored ${(await readdir(clientDir)).length} files into ${vercelStatic}`)
-  }
-} catch {
-  console.log('no .vercel/output/static dir, skipping mirror')
+  await mkdir(vercelStatic, { recursive: true })
+  await cp(clientDir, vercelStatic, { recursive: true, force: true })
+  console.log(`mirrored dist/client into ${vercelStatic}`)
+} catch (err) {
+  console.log(`skipping vercel static mirror: ${err.message}`)
 }
 
 const FONT_BOLD = await readFile(join(publicDir, 'fonts', 'SFPRODISPLAYBOLD.OTF'))
