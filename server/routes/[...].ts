@@ -38,8 +38,9 @@ export default defineEventHandler(async (event) => {
     } catch {}
     if (!urlPath.includes('.')) {
       try {
-        const data = await readFile(join(PUBLIC_DIR, 'index.html'))
+        const data = await readFile(join(PUBLIC_DIR, '404.html'))
         return new Response(data, {
+          status: 404,
           headers: { 'content-type': 'text/html; charset=utf-8' },
         })
       } catch {}

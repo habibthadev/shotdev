@@ -27,6 +27,12 @@ const formatOptions = [
   { value: 'webp', label: 'WebP' },
 ]
 
+const scaleOptions = [
+  { value: '1', label: '1×' },
+  { value: '2', label: '2×' },
+  { value: '3', label: '3×' },
+]
+
 export function SettingsPanel() {
   const settings = useScreenshotStore((s) => s.settings)
   const wallpaperId = useScreenshotStore((s) => s.wallpaperId)
@@ -88,6 +94,15 @@ export function SettingsPanel() {
           <Toggle
             checked={settings.fullPage}
             onChange={(checked) => updateSettings({ fullPage: checked })}
+          />
+        </SettingRow>
+
+        <SettingRow label="Resolution">
+          <Select
+            options={scaleOptions}
+            value={String(settings.scale)}
+            onChange={(v) => updateSettings({ scale: Number(v) })}
+            className="w-24"
           />
         </SettingRow>
 

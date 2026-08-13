@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { appIconDataUri } from './icons'
 
 export type BrowserChrome = 'safari' | 'chrome' | 'firefox' | 'arc' | 'minimal'
 
@@ -9,16 +10,16 @@ export const WALLPAPER_FILES: Record<WallpaperId, string> = {
   sonoma: 'sonoma',
   ventura: 'ventura',
   tahoe: 'tahoe',
-  sequoia: 'sequoai',
+  sequoia: 'sequoia',
   whitesur: 'whitesur',
 }
 
 export const WALLPAPER_EXT: Record<WallpaperId, string> = {
-  sonoma: 'jpg',
-  ventura: 'jpg',
-  tahoe: 'jpg',
-  sequoia: 'jpg',
-  whitesur: 'png',
+  sonoma: 'webp',
+  ventura: 'webp',
+  tahoe: 'webp',
+  sequoia: 'webp',
+  whitesur: 'webp',
 }
 
 export type SceneInput = {
@@ -33,19 +34,26 @@ export type SceneInput = {
   wallpaperDataUri: string
 }
 
+export const WINDOW_TOP = 82
+
 export const CHROME_UI: Record<BrowserChrome, number> = {
-  chrome: 116,
+  chrome: 80,
   safari: 38,
   firefox: 76,
   arc: 38,
   minimal: 36,
 }
 
+const marginX = (w: number) => Math.max(24, Math.round(w * 0.0573))
+const DOCK_GAP = 23
+const DOCK_H = 76
+const DOCK_BOTTOM = 8
+
 export function sceneDimensions(input: Pick<SceneInput, 'width' | 'height' | 'browserId'>) {
   const chromeH = CHROME_UI[input.browserId]
   return {
-    width: input.width + 96,
-    height: input.height + chromeH + 180,
+    width: input.width + marginX(input.width) * 2,
+    height: WINDOW_TOP + input.height + chromeH + DOCK_GAP + DOCK_H + DOCK_BOTTOM,
     chromeH,
   }
 }
@@ -96,7 +104,7 @@ const CHROME_ICONS = {
   back: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="M10.2 3 5.4 8l4.8 5"/></svg>`,
   forward: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="M5.8 3l4.8 5-4.8 5"/></svg>`,
   reload: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:1.6;stroke-linecap:round"><path d="M13.4 8a5.4 5.4 0 1 1-1.7-4"/><path d="M13.7 2.3v3.2h-3.2" style="stroke-linejoin:round"/></svg>`,
-  lock: `<svg width="11" height="12" viewBox="0 0 11 12" fill="none"><rect x="1" y="5" width="9" height="6.4" rx="1.5" fill="#5F6368"/><path d="M2.6 5V3.1a2.9 2.9 0 0 1 5.8 0V5" style="stroke:#5F6368;stroke-width:1.5"/></svg>`,
+  swap: `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="stroke:#5F6368;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><path d="M2.2 4h7M2.2 4 4.4 1.8M2.2 4l2.2 2.2"/><path d="M9.8 8h-7M9.8 8 7.6 5.8M9.8 8 7.6 10.2"/></svg>`,
   star: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:1.2;stroke-linejoin:round"><path d="m8 2.3 1.7 3.4 3.8.6-2.7 2.7.6 3.8-3.4-1.8-3.4 1.8.6-3.8L2.5 6.3l3.8-.6Z"/></svg>`,
   extensions: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:1.3"><rect x="4.6" y="4.6" width="6.8" height="6.8" rx="1.6"/><path d="M8 1.5v3.1M8 11.4v3.1M1.5 8h3.1M11.4 8h3.1" style="stroke-linecap:round"/></svg>`,
   menu: `<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3.2" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="8" cy="12.8" r="1.3"/></svg>`,
@@ -104,102 +112,55 @@ const CHROME_ICONS = {
   newTab: `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="stroke:currentColor;stroke-width:1.4;stroke-linecap:round"><path d="M7 2.5v9M2.5 7h9"/></svg>`,
   tabSearch: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:1.5;stroke-linecap:round"><path d="M8 3.8a3.2 3.2 0 0 1 3.2 3.2M8 1.8a5.2 5.2 0 0 1 5.2 5.2"/><circle cx="8" cy="10.5" r="3.3"/><path d="M10.5 12.6l2.4 2.4"/></svg>`,
   windowControls: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="stroke:currentColor;stroke-width:1.3;stroke-linejoin:round"><path d="M4 4.5h8v7H4z"/><path d="M4 7h8"/></svg>`,
-  goArrow: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="stroke:#5F6368;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="M5.5 13.5 11 8 5.5 2.5"/></svg>`,
-  apps: `<svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="stroke:currentColor;stroke-width:1.1"><rect x="2" y="2" width="10" height="10" rx="2.5"/><circle cx="7" cy="7" r="2" fill="currentColor" stroke="none"/></svg>`,
-  add: `<svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="stroke:currentColor;stroke-width:1.1;stroke-linecap:round"><path d="M7 1.5v11M1.5 7h11"/></svg>`,
 }
 
 const FAVICONS = {
-  gmail: `<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="2.5" width="14" height="11" rx="2.5" fill="#EA4335"/><path d="M2.8 5.4h10.4a1 1 0 0 1 1 1v5.2a1 1 0 0 1-1 1H2.8a1 1 0 0 1-1-1V6.4a1 1 0 0 1 1-1Z" fill="none" style="stroke:#fff;stroke-width:1.15"/><path d="M3 5.7l5 3.4 5-3.4" style="stroke:#fff;stroke-width:1.15;stroke-linejoin:round" fill="none"/><path d="M4.6 12.2l1.5-2M6.4 9.6l1.6 2.2M8 11.8l1.7-2.2M9.9 9.6l1.5 2" style="stroke:#fff;stroke-width:1.15;stroke-linecap:round"/></svg>`,
-  shotdev: `<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="3.5" fill="#007AFF"/><path d="M5.4 4.4h5.2L11.6 6H14v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6h2.4Z" fill="#fff"/><circle cx="8" cy="9" r="2.2" fill="#007AFF"/></svg>`,
-  github: `<svg width="14" height="14" viewBox="0 0 16 16"><path fill="#24292F" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>`,
-  figma: `<svg width="14" height="14" viewBox="0 0 20 20"><circle cx="5" cy="4" r="4" fill="#F24E1E"/><circle cx="5" cy="10" r="4" fill="#0ACF83"/><circle cx="5" cy="16" r="4" fill="#A259FF"/><circle cx="11" cy="4" r="4" fill="#FF7262"/><circle cx="11" cy="10" r="4" fill="#1ABCFE"/></svg>`,
-  vercel: `<svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 3.5 22.5 20.5h-21Z" fill="#000"/></svg>`,
-  youtube: `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="3.5" fill="#FF0000"/><path d="M5.7 4.6 10 7l-4.3 2.4Z" fill="#fff"/></svg>`,
+  chatgpt: (dark: boolean) =>
+    `<svg width="16" height="16" viewBox="0 0 24 24" style="fill:${dark ? 'rgba(255,255,255,0.9)' : '#111'};flex-shrink:0"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg>`,
 }
 
-const DOCK_ICONS = {
-  finder: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><rect x="3" y="3" width="42" height="42" rx="9.5" fill="#4DA6FF"/><path d="M24 3h-11.5A9.5 9.5 0 0 0 3 12.5V33a9.5 9.5 0 0 0 9.5 9.5H24Z" fill="#007AFF"/><path d="M10.5 26.5c3.8 4.6 9.6 4.6 13.5 0" style="stroke:#fff;stroke-width:2.4;stroke-linecap:round" fill="none"/></svg>`,
-  chrome: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><path d="M24 24 9.86 10.14A20 20 0 0 1 24 4Z" fill="#4285F4"/><path d="M24 24 24 4a20 20 0 0 1 14.14 6.14Z" fill="#EA4335"/><path d="M24 24l14.14 6.14A20 20 0 0 1 24 44Z" fill="#FBBC05"/><path d="M24 24 24 44a20 20 0 0 1-14.14-6.14Z" fill="#34A853"/><circle cx="24" cy="24" r="8.5" fill="#fff"/><circle cx="24" cy="24" r="4" fill="#4285F4"/></svg>`,
-  safari: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><defs><linearGradient id="sg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#8ED8FF"/><stop offset="1" stopColor="#0A7DFF"/></linearGradient></defs><circle cx="24" cy="24" r="20" fill="url(#sg1)"/><path d="M24 12.5 27 27l-3 1-3-1Z" fill="#fff"/><path d="M24 35.5 27 27l-3 1-3-1Z" fill="#FF3B30"/></svg>`,
-  mail: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><rect x="4" y="4" width="40" height="40" rx="9.5" fill="#3F9BFF"/><rect x="10" y="16" width="28" height="17" rx="3.5" fill="#fff"/><path d="M10.5 17.5 24 26.5 37.5 17.5" style="stroke:#3F9BFF;stroke-width:2.6;stroke-linejoin:round" fill="none"/></svg>`,
-  messages: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><rect x="4" y="4" width="40" height="40" rx="10" fill="#3FE58C"/><path d="M12 15h24a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H21.5L14.5 37v-5H12a3 3 0 0 1-3-3V18a3 3 0 0 1 3-3Z" fill="#fff"/></svg>`,
-  notes: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><rect x="4" y="4" width="40" height="40" rx="10" fill="#FFD60A"/><path d="M11 13h26v3.5H11Z" fill="#E5B800"/><path d="M12.5 22h23M12.5 27.5h18M12.5 33h21" style="stroke:#B8860B;stroke-width:2.6;stroke-linecap:round;opacity:.55"/></svg>`,
-  calendar: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><rect x="4" y="4" width="40" height="40" rx="9" fill="#fff" style="stroke:#E3E3E8;stroke-width:1.5"/><path d="M4 13a9 9 0 0 1 9-9h22a9 9 0 0 1 9 9v4.5H4Z" fill="#FF453A"/><rect x="13" y="2" width="3.6" height="6" rx="1.8" fill="#FF453A"/><rect x="31.4" y="2" width="3.6" height="6" rx="1.8" fill="#FF453A"/><text x="24" y="34" text-anchor="middle" style="font:700 15px system-ui;fill:#1C1C1E">17</text></svg>`,
-  photos: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><rect x="4" y="4" width="40" height="40" rx="9.5" fill="#fff" style="stroke:#E3E3E8;stroke-width:1.5"/><circle cx="24" cy="15.5" r="6.5" fill="#FFD60A"/><circle cx="33" cy="24" r="6.5" fill="#34C759"/><circle cx="24" cy="32.5" r="6.5" fill="#FF9F0A"/><circle cx="15" cy="24" r="6.5" fill="#FF375F"/><circle cx="24" cy="24" r="4.5" fill="#fff"/></svg>`,
-  music: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><defs><linearGradient id="mg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FD8BA0"/><stop offset="1" stopColor="#FC5C7D"/></linearGradient></defs><rect x="4" y="4" width="40" height="40" rx="10" fill="url(#mg1)"/><path d="M18.5 34.5V16.5l13.5-3.2v20.4" style="stroke:#fff;stroke-width:3.4;stroke-linecap:round" fill="none"/><circle cx="15.2" cy="34.8" r="4.4" fill="#fff"/><circle cx="28.7" cy="33.7" r="4.4" fill="#fff"/></svg>`,
-  terminal: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><rect x="4" y="4" width="40" height="40" rx="10" fill="#2B2B2E"/><path d="M13.5 16.5 20.5 23l-7 6.5" style="stroke:#fff;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round" fill="none"/><path d="M22.5 29.5h12" style="stroke:#fff;stroke-width:3.2;stroke-linecap:round"/></svg>`,
-  trash: `<svg viewBox="0 0 48 48" style="width:44px;height:44px"><rect x="4" y="4" width="40" height="40" rx="10" fill="#fff" opacity=".75"/><path d="M16.5 18.5h15l-1.4 18.2a3 3 0 0 1-3 2.6h-6.2a3 3 0 0 1-3-2.6Z" fill="#B8BDC4"/><rect x="13.5" y="13.5" width="21" height="5" rx="2.4" fill="#B8BDC4"/><path d="M20 13.5v-1.2a4 4 0 0 1 8 0v1.2" style="stroke:#B8BDC4;stroke-width:2.6" fill="none"/><path d="M20 19v17M24 19v17.3M28 19v17" style="stroke:#fff;stroke-width:2;opacity:.6"/></svg>`,
-}
+const DOCK_APPS = [
+  'finder', 'launchpad', 'safari', 'messages', 'mail', 'maps', 'photos', 'facetime',
+  'calendar', 'contacts', 'reminders', 'notes', 'tv', 'music', 'news', 'appstore', 'settings', 'chrome',
+] as const
 
-const DOCK_ORDER: { label: string; icon: keyof typeof DOCK_ICONS; running?: boolean }[] = [
-  { label: 'Finder', icon: 'finder', running: true },
-  { label: 'Chrome', icon: 'chrome', running: true },
-  { label: 'Safari', icon: 'safari', running: true },
-  { label: 'Mail', icon: 'mail' },
-  { label: 'Messages', icon: 'messages' },
-  { label: 'Notes', icon: 'notes' },
-  { label: 'Calendar', icon: 'calendar' },
-  { label: 'Photos', icon: 'photos' },
-  { label: 'Music', icon: 'music' },
-  { label: 'Terminal', icon: 'terminal' },
-]
+const DOCK_RUNNING = new Set(['finder', 'chrome'])
 
-function trafficLights(size = 12) {
-  return `<span style="display:inline-flex;gap:6px;margin-right:8px;flex-shrink:0"><span style="width:${size}px;height:${size}px;border-radius:50%;background:#FF5F57;border:1px solid rgba(0,0,0,.1)"></span><span style="width:${size}px;height:${size}px;border-radius:50%;background:#FFBD2E;border:1px solid rgba(0,0,0,.1)"></span><span style="width:${size}px;height:${size}px;border-radius:50%;background:#28CA42;border:1px solid rgba(0,0,0,.1)"></span></span>`
-}
-
-function bookmarksRow(dark: boolean) {
-  const color = dark ? 'rgba(255,255,255,0.75)' : '#3C4043'
-  const items = [
-    { icon: FAVICONS.shotdev, label: 'Shotdev' },
-    { icon: FAVICONS.github, label: 'GitHub' },
-    { icon: FAVICONS.figma, label: 'Figma' },
-    { icon: FAVICONS.vercel, label: 'Vercel' },
-    { icon: FAVICONS.youtube, label: 'YouTube' },
-  ]
-  const item = (i: string, l: string) =>
-    `<span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;color:${color};cursor:default">${i}<span style="white-space:nowrap">${l}</span></span>`
-  return (
-    `<div style="height:32px;display:flex;align-items:center;gap:4px;padding:0 12px;background:${dark ? '#2d2d2d' : '#f1f3f4'};border-top:1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}">` +
-    items.map((x) => item(x.icon, x.label)).join('') +
-    `<span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;color:${color}">${CHROME_ICONS.apps}<span>Apps</span></span>` +
-    `<span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;color:${color}">${CHROME_ICONS.add}<span>Add</span></span>` +
-    `</div>`
-  )
+function trafficLights(size = 12, mr = 8) {
+  return `<span style="display:inline-flex;gap:8px;margin-right:${mr}px;flex-shrink:0"><span style="width:${size}px;height:${size}px;border-radius:50%;background:#FF5F57;border:1px solid rgba(0,0,0,.1)"></span><span style="width:${size}px;height:${size}px;border-radius:50%;background:#FFBD2E;border:1px solid rgba(0,0,0,.1)"></span><span style="width:${size}px;height:${size}px;border-radius:50%;background:#28CA42;border:1px solid rgba(0,0,0,.1)"></span></span>`
 }
 
 function chromeWindowMarkup(url: string, shot: string, vh: number, dark: boolean) {
   const fg = dark ? 'rgba(255,255,255,0.85)' : '#202124'
-  const fgMuted = dark ? 'rgba(255,255,255,0.5)' : '#5F6368'
-  const stripBg = dark ? 'linear-gradient(#383838,#313131)' : 'linear-gradient(#e3e6e8,#dadddf)'
-  const toolbarBg = dark ? '#2d2d2d' : '#dee1e6'
-  const pillBg = dark ? '#1e1e1e' : '#ffffff'
+  const fgMuted = dark ? 'rgba(255,255,255,0.55)' : '#5F6368'
+  const chromeBg = dark ? '#3a3a3a' : '#dee1e6'
+  const tabBg = dark ? '#2d2d2d' : '#ffffff'
+  const pillBg = dark ? '#1e1e1e' : '#f1f3f4'
+  const pillText = dark ? 'rgba(255,255,255,0.8)' : '#3c4043'
+  const seam = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'
+  const avatar = dark ? 'rgba(255,255,255,0.35)' : '#c6c9cf'
 
-  const toolBtn = (icon: string, label: string) =>
-    `<span style="width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:${fgMuted};flex-shrink:0" title="${label}">${icon}</span>`
+  const toolBtn = (icon: string, label: string, dim = false) =>
+    `<span style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;color:${fgMuted};opacity:${dim ? 0.5 : 1};flex-shrink:0" title="${label}">${icon}</span>`
 
   return (
-    `<div style="height:40px;display:flex;align-items:center;gap:4px;padding:0 8px 0 12px;background:${stripBg}">` +
-    trafficLights() +
-    `<span style="display:inline-flex;align-items:center;gap:8px;height:100%;padding:0 12px;border-radius:9px 9px 0 0;color:${fgMuted};font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${FAVICONS.gmail}Inbox (3) — Gmail</span>` +
-    `<span style="display:inline-flex;align-items:center;gap:8px;height:100%;padding:0 12px;border-radius:9px 9px 0 0;background:${dark ? '#2d2d2d' : '#ffffff'};box-shadow:0 1px 0 rgba(0,0,0,.05);color:${fg};font-size:12px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${FAVICONS.shotdev}shotdev — Screenshot any website</span>` +
-    `<span style="width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:${fgMuted};flex-shrink:0">${CHROME_ICONS.newTab}</span>` +
-    `<span style="margin-left:auto;display:inline-flex;align-items:center;gap:2px">` +
-    toolBtn(CHROME_ICONS.tabSearch, 'Tab search') +
-    toolBtn(CHROME_ICONS.windowControls, 'Window controls') +
-    `</span></div>` +
-    `<div style="height:44px;display:flex;align-items:center;gap:2px;padding:0 12px;background:${toolbarBg}">` +
-    toolBtn(CHROME_ICONS.back, 'Back') +
-    toolBtn(CHROME_ICONS.forward, 'Forward') +
-    toolBtn(CHROME_ICONS.reload, 'Reload') +
-    `<span style="flex:1;display:flex;justify-content:center;padding:0 12px"><span style="height:28px;max-width:560px;width:100%;border-radius:14px;background:${pillBg};box-shadow:0 1px 2.5px rgba(0,0,0,.18);display:flex;align-items:center;gap:8px;padding:0 14px">${CHROME_ICONS.lock}<span style="font-size:12.5px;color:${fg};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(url)}</span><span style="margin-left:auto">${CHROME_ICONS.goArrow}</span></span></span>` +
-    toolBtn(CHROME_ICONS.extensions, 'Extensions') +
-    toolBtn(CHROME_ICONS.star, 'Bookmark') +
-    toolBtn(CHROME_ICONS.menu, 'Menu') +
-    `<span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#4285F4,#9B72CB);color:#fff;font-size:11px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;margin-left:2px;flex-shrink:0">S</span>` +
+    `<div style="height:40px;display:flex;align-items:center;gap:2px;padding-left:20px;background:${chromeBg}">` +
+    trafficLights(12, 0) +
+    `<span style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:8px 12px;margin-left:12px;border-radius:8px 8px 0 0;background:${tabBg};color:${dark ? 'rgba(255,255,255,0.9)' : '#3c4043'};font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${FAVICONS.chatgpt(dark)}<span>ChatGPT</span><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;color:${fgMuted};opacity:.8;margin-left:4px;flex-shrink:0">${CHROME_ICONS.close}</span></span>` +
+    `<span style="width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:${fgMuted};margin-left:6px;flex-shrink:0">${CHROME_ICONS.newTab}</span>` +
     `</div>` +
-    bookmarksRow(dark) +
+    `<div style="height:40px;display:flex;align-items:center;gap:14px;padding:0 16px;background:${chromeBg};border-top:1px solid ${seam}">` +
+    toolBtn(CHROME_ICONS.back, 'Back', true) +
+    toolBtn(CHROME_ICONS.forward, 'Forward', true) +
+    toolBtn(CHROME_ICONS.reload, 'Reload') +
+    `<span style="flex:1;display:flex;align-items:center;gap:8px;height:28px;border-radius:14px;background:${pillBg};padding:0 12px;min-width:0">` +
+    CHROME_ICONS.swap +
+    `<span style="font-size:12.5px;color:${pillText};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(url)}</span>` +
+    `</span>` +
+    toolBtn(CHROME_ICONS.star, 'Bookmark') +
+    `<span style="width:20px;height:20px;border-radius:50%;background:${avatar};flex-shrink:0"></span>` +
+    toolBtn(CHROME_ICONS.menu, 'Menu') +
+    `</div>` +
     `<img src="${shot}" style="display:block;width:100%;height:${vh}px;object-fit:cover;object-position:top;background:${dark ? '#1e1e1e' : '#ffffff'}" />`
   )
 }
@@ -281,42 +242,48 @@ function menubarMarkup(appName: string, dark: boolean) {
   const muted = dark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)'
   const bg = dark ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.55)'
   const border = dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)'
-  const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const now = new Date()
+  const date = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
   return (
-    `<div style="position:absolute;top:0;left:0;right:0;height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:${bg};backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid ${border};color:${fg};font-size:13px;font-family:${FONT}">` +
-    `<div style="display:flex;align-items:center;gap:8px;min-width:0">` +
+    `<div style="position:absolute;top:0;left:0;right:0;height:37px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:${bg};backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid ${border};color:${fg};font-size:13.5px;font-family:${FONT}">` +
+    `<div style="display:flex;align-items:center;gap:6px;min-width:0">` +
     MENUBAR_ICONS.apple +
-    `<span style="font-weight:600;margin-right:4px">${appName}</span>` +
-    MENUS.map((m) => `<span style="padding:2px 10px;border-radius:5px;color:${muted};font-size:13px">${m}</span>`).join('') +
+    `<span style="font-weight:700;padding:2px 8px;border-radius:6px">${appName}</span>` +
+    MENUS.map((m) => `<span style="padding:2px 8px;border-radius:6px;color:${muted};font-size:13.5px">${m}</span>`).join('') +
     `</div>` +
     `<div style="display:flex;align-items:center;gap:14px;color:${muted}">` +
     MENUBAR_ICONS.wifi +
-    MENUBAR_ICONS.battery +
-    MENUBAR_ICONS.spotlight +
-    MENUBAR_ICONS.controlCenter +
-    `<span style="color:${dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'}">${new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>` +
-    `<span style="font-weight:500;font-variant-numeric:tabular-nums;color:${fg}">${time}</span>` +
+    `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:${fg}">100%${MENUBAR_ICONS.battery}</span>` +
+    `<span style="font-weight:500;font-variant-numeric:tabular-nums;color:${fg}">${date}&nbsp;&nbsp;${time}</span>` +
     `</div></div>`
   )
 }
 
-function dockMarkup(dark: boolean) {
-  const bg = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.4)'
-  const border = dark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.6)'
-  const dot = dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.45)'
-  const icons = DOCK_ORDER.map(
-    (app) =>
-      `<span style="position:relative;display:flex;align-items:flex-end;height:52px">${DOCK_ICONS[app.icon]}${
-        app.running
-          ? `<span style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:${dot}"></span>`
-          : ''
-      }</span>`,
-  ).join('')
+function dockMarkup(dark: boolean, sceneW: number) {
+  const dot = dark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.55)'
+  const size = Math.min(54, Math.max(38, Math.round(sceneW * 0.0375)))
+  const radius = Math.round(size * 0.22)
+  const gap = Math.max(8, Math.round(size * 0.19))
+
+  const item = (id: string, running = false) => {
+    const uri = appIconDataUri(id) ?? appIconDataUri('finder')
+    return (
+      `<span style="position:relative;display:flex;align-items:flex-end;height:${size}px">` +
+      `<img src="${uri}" style="width:${size}px;height:${size}px;border-radius:${radius}px;box-shadow:0 3px 8px rgba(0,0,0,0.32), 0 1px 2px rgba(0,0,0,0.18)" />` +
+      (running
+        ? `<span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:4.5px;height:4.5px;border-radius:50%;background:${dot}"></span>`
+        : '') +
+      `</span>`
+    )
+  }
+
   return (
-    `<div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:6px;padding:8px 10px;border-radius:22px;background:${bg};backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid ${border};box-shadow:0 10px 36px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.5);font-family:${FONT}">` +
-    icons +
-    `<span style="width:1px;height:40px;background:rgba(0,0,0,.1);margin:0 4px"></span>` +
-    `<span style="display:flex;align-items:flex-end;height:52px">${DOCK_ICONS.trash}</span>` +
+    `<div style="position:absolute;bottom:${DOCK_BOTTOM}px;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:${gap}px">` +
+    DOCK_APPS.map((id) => item(id, DOCK_RUNNING.has(id))).join('') +
+    `<span style="width:1px;height:${Math.round(size * 0.85)}px;background:${dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.16)'};margin:0 7px"></span>` +
+    item('downloads') +
+    item('bin') +
     `</div>`
   )
 }
@@ -347,11 +314,11 @@ export function buildSceneHtml(input: SceneInput) {
 
     ${menubarMarkup(APP_NAMES[browserId], dark)}
 
-    <div style="position:absolute;top:64px;left:50%;transform:translateX(-50%);width:${windowW}px;height:${windowH}px;border-radius:11px;overflow:hidden;background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.1), 0 16px 40px rgba(0,0,0,.18), 0 40px 90px rgba(0,0,0,.24)">
+    <div style="position:absolute;top:${WINDOW_TOP}px;left:50%;transform:translateX(-50%);width:${windowW}px;height:${windowH}px;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.14), 0 1px 2px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.10), 0 14px 32px rgba(0,0,0,.18), 0 36px 72px rgba(0,0,0,.26)">
       ${windowMarkup(browserId, url, screenshotDataUri, height, dark)}
     </div>
 
-    ${dockMarkup(dark)}
+    ${dockMarkup(dark, sceneW)}
   </div>
 </body>
 </html>`

@@ -6,6 +6,7 @@ export type ScreenshotInput = {
   height: number
   format: ScreenshotFormat
   fullPage: boolean
+  scale: number
   darkMode: boolean
   delay: number
   browserId: BrowserChrome

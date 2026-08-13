@@ -14,9 +14,7 @@ export const WALLPAPERS: { id: WallpaperId; name: string }[] = [
 ]
 
 export function wallpaperSrc(id: WallpaperId, dark: boolean) {
-  const file = id === 'sequoia' ? 'sequoai' : id
-  const ext = id === 'whitesur' ? 'png' : 'jpg'
-  return `/wallpaper/${file}-${dark ? 'dark' : 'light'}.${ext}`
+  return `/wallpaper/${id}-${dark ? 'dark' : 'light'}.webp`
 }
 
 export type ScreenshotFormat = 'png' | 'jpeg' | 'webp'
@@ -38,6 +36,7 @@ export type ScreenshotSettings = {
   preset: ViewportPreset
   format: ScreenshotFormat
   fullPage: boolean
+  scale: number
   darkMode: boolean
   delay: number
 }
@@ -72,6 +71,7 @@ export const useScreenshotStore = create<ScreenshotStore>((set, get) => ({
     preset: '1280x800',
     format: 'png',
     fullPage: false,
+    scale: 1,
     darkMode: false,
     delay: 0,
   },
@@ -104,6 +104,7 @@ export const useScreenshotStore = create<ScreenshotStore>((set, get) => ({
         height: state.settings.height,
         format: state.settings.format,
         fullPage: state.settings.fullPage,
+        scale: state.settings.scale,
         darkMode: state.settings.darkMode,
         delay: state.settings.delay,
         browserId: state.browserId,

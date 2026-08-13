@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import puppeteer, { type Browser, type Page } from 'puppeteer-core'
+import { chromium as playwright, type Browser, type BrowserContext } from 'playwright-core'
+import sparticuz from '@sparticuz/chromium'
 import { z } from 'zod'
 import { buildSceneHtml, sceneDimensions, WALLPAPER_FILES, WALLPAPER_EXT, type BrowserChrome, type WallpaperId } from './scene'
 
@@ -10,6 +11,7 @@ export const ScreenshotInputSchema = z.object({
   height: z.number().min(240).max(2160).default(800),
   format: z.enum(['png', 'jpeg', 'webp']).default('png'),
   fullPage: z.boolean().default(false),
+  scale: z.number().int().min(1).max(3).default(1),
   darkMode: z.boolean().default(false),
   delay: z.number().min(0).max(10000).default(0),
   browserId: z.enum(['safari', 'chrome', 'firefox', 'arc', 'minimal']).default('chrome'),
@@ -18,73 +20,71 @@ export const ScreenshotInputSchema = z.object({
 
 export type ScreenshotInput = z.infer<typeof ScreenshotInputSchema>
 
-const CHROME_CANDIDATES = [
-  process.env.CHROME_PATH,
+const LOCAL_CHROME_CANDIDATES = [
   '/data/data/com.termux/files/usr/bin/chromium-browser',
   '/data/data/com.termux/files/usr/bin/chromium',
   '/usr/bin/chromium-browser',
   '/usr/bin/google-chrome',
-].filter(Boolean) as string[]
+]
 
-function resolveChrome(): string {
-  for (const candidate of CHROME_CANDIDATES) {
-    if (candidate.startsWith('/') && existsSync(candidate)) return candidate
+const CHROME_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-gpu',
+  '--disable-software-rasterizer',
+  '--disable-background-timer-throttling',
+  '--disable-backgrounding-occluded-windows',
+  '--no-first-run',
+  '--no-default-browser-check',
+  '--disable-extensions',
+]
+
+async function resolveChrome(): Promise<string> {
+  if (process.env.CHROME_PATH && existsSync(process.env.CHROME_PATH)) return process.env.CHROME_PATH
+  for (const candidate of LOCAL_CHROME_CANDIDATES) {
+    if (existsSync(candidate)) return candidate
   }
-  return 'chromium'
+  return sparticuz.executablePath()
 }
 
 let browser: Browser | null = null
 
 async function getBrowser(): Promise<Browser> {
-  if (browser && browser.connected) return browser
-  browser = await puppeteer.launch({
-    executablePath: resolveChrome(),
+  if (browser && browser.isConnected()) return browser
+  const onVercel = process.env.VERCEL === '1'
+  browser = await playwright.launch({
+    executablePath: await resolveChrome(),
     headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--disable-software-rasterizer',
-      '--disable-background-timer-throttling',
-      '--disable-backgrounding-occluded-windows',
-      '--no-first-run',
-      '--no-default-browser-check',
-      '--disable-extensions',
-    ],
+    args: onVercel ? sparticuz.args : CHROME_ARGS,
   })
   return browser
 }
 
-async function closePageSafely(page: Page): Promise<void> {
+async function closeContextSafely(context: BrowserContext | null): Promise<void> {
+  if (!context) return
   try {
-    await page.close()
+    await context.close()
   } catch {}
 }
 
-function wallpaperDataUri(wallpaperId: WallpaperId, dark: boolean): string {
-  const file = WALLPAPER_FILES[wallpaperId]
-  const ext = WALLPAPER_EXT[wallpaperId]
-  const path = join(process.cwd(), 'public', 'wallpaper', `${file}-${dark ? 'dark' : 'light'}.${ext}`)
-  const buffer = readFileSync(path)
-  return `data:image/${ext};base64,${buffer.toString('base64')}`
-}
-
 export async function captureScene(data: ScreenshotInput) {
-  let page: Page | null = null
-  let scenePage: Page | null = null
+  let context: BrowserContext | null = null
+  let sceneContext: BrowserContext | null = null
 
   try {
     const b = await getBrowser()
 
-    page = await b.newPage()
-    await page.setViewport({ width: data.width, height: data.height })
-    await page.emulateMediaFeatures([
-      { name: 'prefers-color-scheme', value: data.darkMode ? 'dark' : 'light' },
-    ])
-    await page.setUserAgent(
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    )
+    const userAgent =
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
+    context = await b.newContext({
+      viewport: { width: data.width, height: data.height },
+      deviceScaleFactor: data.scale,
+      userAgent,
+      colorScheme: data.darkMode ? 'dark' : 'light',
+    })
+    const page = await context.newPage()
 
     await page.goto(data.url, { waitUntil: 'load', timeout: 30_000 })
     await new Promise((r) => setTimeout(r, 1000 + data.delay))
@@ -98,11 +98,22 @@ export async function captureScene(data: ScreenshotInput) {
       ...(data.format === 'jpeg' ? { quality: 92 } : {}),
     })
 
-    const dims = sceneDimensions(data)
+    const contentH = data.fullPage
+      ? Math.min(
+          Math.max(
+            data.height,
+            await page.evaluate(() => document.documentElement.scrollHeight),
+          ),
+          12000,
+        )
+      : data.height
+    const sceneHeight = data.fullPage ? contentH : data.height
+
+    const dims = sceneDimensions({ width: data.width, height: sceneHeight, browserId: data.browserId as BrowserChrome })
     const sceneHtml = buildSceneHtml({
       url: data.url,
       width: data.width,
-      height: data.height,
+      height: sceneHeight,
       browserId: data.browserId as BrowserChrome,
       wallpaperId: data.wallpaperId as WallpaperId,
       dark: data.darkMode,
@@ -111,11 +122,23 @@ export async function captureScene(data: ScreenshotInput) {
       wallpaperDataUri: wallpaperDataUri(data.wallpaperId as WallpaperId, data.darkMode),
     })
 
-    scenePage = await b.newPage()
-    await scenePage.setViewport({ width: dims.width, height: dims.height })
+    sceneContext = await b.newContext({
+      viewport: { width: dims.width, height: dims.height },
+      deviceScaleFactor: data.scale,
+    })
+    const scenePage = await sceneContext.newPage()
     await scenePage.setContent(sceneHtml, { waitUntil: 'load' })
     try {
       await scenePage.evaluate(() => (document as Document & { fonts: FontFaceSet }).fonts.ready)
+    } catch {}
+    try {
+      await scenePage.evaluate(() =>
+        Promise.all(
+          Array.from(document.images).map((img) =>
+            img.complete ? Promise.resolve() : img.decode().catch(() => {}),
+          ),
+        ),
+      )
     } catch {}
     await new Promise((r) => setTimeout(r, 350))
 
@@ -124,8 +147,8 @@ export async function captureScene(data: ScreenshotInput) {
       ...(data.format === 'jpeg' ? { quality: 92 } : {}),
     })
 
-    await closePageSafely(page)
-    await closePageSafely(scenePage)
+    await closeContextSafely(context)
+    await closeContextSafely(sceneContext)
 
     return {
       image: Buffer.from(buffer).toString('base64'),
@@ -136,8 +159,8 @@ export async function captureScene(data: ScreenshotInput) {
       capturedAt: new Date().toISOString(),
     }
   } catch (error) {
-    if (page) await closePageSafely(page)
-    if (scenePage) await closePageSafely(scenePage)
+    await closeContextSafely(context)
+    await closeContextSafely(sceneContext)
 
     if (error instanceof Error) {
       const msg = error.message.toLowerCase()
@@ -154,4 +177,12 @@ export async function captureScene(data: ScreenshotInput) {
     }
     throw new Error('Failed to capture screenshot.')
   }
+}
+
+function wallpaperDataUri(wallpaperId: WallpaperId, dark: boolean): string {
+  const file = WALLPAPER_FILES[wallpaperId]
+  const ext = WALLPAPER_EXT[wallpaperId]
+  const path = join(process.cwd(), 'public', 'wallpaper', `${file}-${dark ? 'dark' : 'light'}.${ext}`)
+  const buffer = readFileSync(path)
+  return `data:image/${ext};base64,${buffer.toString('base64')}`
 }

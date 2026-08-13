@@ -1,4 +1,5 @@
 import { captureScene, ScreenshotInputSchema } from '../utils/capture'
+import { assertPublicUrl } from '../utils/ssrf'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => null)
@@ -7,6 +8,14 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       statusMessage: parsed.error.errors[0]?.message || 'Invalid input',
+    })
+  }
+  try {
+    await assertPublicUrl(parsed.data.url)
+  } catch (error) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: error instanceof Error ? error.message : 'Invalid URL',
     })
   }
   try {

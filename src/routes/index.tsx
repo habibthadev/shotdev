@@ -12,10 +12,22 @@ import {
 } from '@phosphor-icons/react'
 
 export const Route = createFileRoute('/')({
+  head: () => ({
+    meta: [
+      { title: 'shotdev — Website screenshots, in a macOS frame' },
+      { name: 'description', content: 'Production-ready screenshots with native browser frames. Built for developers, designers, and anyone who values pixel-perfect presentation.' },
+      { property: 'og:title', content: 'shotdev — Website screenshots, in a macOS frame' },
+      { property: 'og:description', content: 'Production-ready screenshots with native browser frames. Built for developers, designers, and anyone who values pixel-perfect presentation.' },
+      { property: 'og:url', content: '/' },
+      { name: 'twitter:title', content: 'shotdev — Website screenshots, in a macOS frame' },
+      { name: 'twitter:description', content: 'Production-ready screenshots with native browser frames. Built for developers, designers, and anyone who values pixel-perfect presentation.' },
+    ],
+    links: [{ rel: 'canonical', href: '/' }],
+  }),
   component: LandingPage,
 })
 
-const WALLPAPERS = ['sonoma', 'ventura', 'tahoe', 'sequoai', 'whitesur']
+const WALLPAPERS = ['sonoma', 'ventura', 'tahoe', 'sequoia', 'whitesur']
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null)
@@ -242,7 +254,7 @@ function LandingPage() {
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <MiniScene wallpaper="tahoe" label="Tahoe · Chrome" />
-            <MiniScene wallpaper="sequoai" label="Sequoia · Safari" />
+            <MiniScene wallpaper="sequoia" label="Sequoia · Safari" />
             <MiniScene wallpaper="ventura" label="Ventura · Firefox" />
           </div>
         </Reveal>
@@ -465,7 +477,7 @@ function SceneMockup() {
           {WALLPAPERS.map((wall, i) => (
             <img
               key={wall}
-              src={`/wallpaper/${wall}-light.jpg`}
+              src={`/wallpaper/${wall}-light.webp`}
               alt=""
               draggable={false}
               onLoad={() => setLoaded((l) => l.map((v, j) => (j === i ? true : v)))}
@@ -491,17 +503,20 @@ function SceneMockup() {
 
         <div className="absolute inset-x-0 bottom-0 flex justify-center pb-3">
           <div className="flex items-end gap-1.5 rounded-[18px] border border-white/60 bg-white/40 px-2.5 py-2 shadow-[0_8px_28px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-2xl">
-            {['#4DA6FF', 'linear-gradient(135deg,#4285F4,#34A853)', '#0A7DFF', '#3F9BFF', '#3FE58C', '#FFD60A', '#FF453A', '#FF9F0A', '#FC5C7D', '#2B2B2E'].map(
-              (c, i) => (
-                <span
-                  key={i}
-                  className="h-7 w-7 rounded-[7px] transition-transform duration-200 hover:-translate-y-1.5 sm:h-8 sm:w-8"
-                  style={{ background: c }}
+            {['finder', 'launchpad', 'safari', 'messages', 'mail', 'maps', 'photos', 'facetime', 'calendar'].map((id, i) => (
+              <span key={id} className="relative">
+                <img
+                  src={`/icons/${id}.svg`}
+                  alt=""
+                  draggable={false}
+                  loading="lazy"
+                  className="h-7 w-7 rounded-[7px] shadow-[0_2px_5px_rgba(0,0,0,0.25)] transition-transform duration-200 hover:-translate-y-1.5 sm:h-8 sm:w-8"
                 />
-              ),
-            )}
+                {i < 2 && <span className="absolute bottom-0 left-1/2 h-[3px] w-[3px] -translate-x-1/2 rounded-full bg-black/50" />}
+              </span>
+            ))}
             <span className="mx-1 h-7 w-px bg-black/10" />
-            <span className="h-7 w-7 rounded-[7px] bg-white/75 sm:h-8 sm:w-8" />
+            <img src="/icons/bin.svg" alt="" draggable={false} loading="lazy" className="h-7 w-7 rounded-[7px] shadow-[0_2px_5px_rgba(0,0,0,0.25)] sm:h-8 sm:w-8" />
           </div>
         </div>
 
@@ -510,11 +525,14 @@ function SceneMockup() {
             <span className="h-2.5 w-2.5 rounded-full border border-black/10 bg-[#FF5F57]" />
             <span className="h-2.5 w-2.5 rounded-full border border-black/10 bg-[#FFBD2E]" />
             <span className="h-2.5 w-2.5 rounded-full border border-black/10 bg-[#28CA42]" />
-            <span className="ml-2 h-4 w-14 rounded-t-[7px] bg-white text-[9px] leading-4 text-[#5F6368] sm:w-20">
-              &nbsp;
+            <span className="ml-2 flex h-4 items-center gap-1 rounded-t-[7px] bg-[#f6f6f6] pr-1 text-[9px] text-[#5F6368] sm:w-24">
+              <span className="ml-1.5 h-2 w-2 rounded-[2px] bg-[#EA4335]" />
+              <span className="hidden sm:inline">Inbox (3)</span>
             </span>
-            <span className="h-4 w-20 rounded-t-[7px] bg-white text-[9px] leading-4 text-[#202124] shadow-[0_-1px_0_rgba(0,0,0,0.05)] sm:w-28">
-              &nbsp;
+            <span className="flex h-4 items-center gap-1 rounded-t-[7px] bg-white pl-1.5 pr-1 text-[9px] text-[#202124] shadow-[0_-1px_0_rgba(0,0,0,0.05)] sm:w-28">
+              <span className="h-2 w-2 rounded-full bg-gradient-to-br from-[#98C1FF] to-[#4285F4]" />
+              <span className="hidden sm:inline">shotdev</span>
+              <span className="ml-auto flex h-2.5 w-2.5 items-center justify-center text-[7px] text-[#5F6368]">✕</span>
             </span>
           </div>
           <div className="flex h-9 items-center gap-1 bg-[#dee1e6] px-2 sm:h-10">
@@ -524,7 +542,13 @@ function SceneMockup() {
                 <span className="h-1.5 w-16 rounded-full bg-black/15 sm:w-24" />
               </span>
             </span>
+            <span className="hidden h-3.5 w-3.5 text-[#5F6368] sm:block">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"><path d="m8 2.3 1.7 3.4 3.8.6-2.7 2.7.6 3.8-3.4-1.8-3.4 1.8.6-3.8L2.5 6.3l3.8-.6Z" /></svg>
+            </span>
             <span className="h-4 w-4 rounded-full bg-gradient-to-br from-[#4285F4] to-[#9B72CB]" />
+            <span className="hidden h-3 w-3 text-[#5F6368] sm:block">
+              <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3.2" r="1.3" /><circle cx="8" cy="8" r="1.3" /><circle cx="8" cy="12.8" r="1.3" /></svg>
+            </span>
           </div>
           <div className="flex h-14 flex-col justify-center gap-1.5 p-3 sm:h-16 sm:gap-2 sm:p-4">
             <div className="h-2.5 w-1/3 rounded bg-black/[0.07] sm:h-3" />
@@ -547,7 +571,7 @@ function MiniScene({ wallpaper, label }: { wallpaper: string; label: string }) {
     <div className="group overflow-hidden rounded-2xl border border-[var(--color-separator)] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
       <div className="relative aspect-[16/10] overflow-hidden select-none">
         <img
-          src={`/wallpaper/${wallpaper}-light.jpg`}
+          src={`/wallpaper/${wallpaper}-light.webp`}
           alt={`${label} scene`}
           draggable={false}
           loading="lazy"
@@ -579,8 +603,15 @@ function MiniScene({ wallpaper, label }: { wallpaper: string; label: string }) {
         </div>
         <div className="absolute inset-x-0 bottom-0 flex justify-center pb-1.5">
           <div className="flex items-end gap-1 rounded-full border border-white/50 bg-white/35 px-1.5 py-1 backdrop-blur-xl">
-            {['#4DA6FF', '#34C759', '#FF9F0A', '#FF453A', '#2B2B2E'].map((c, i) => (
-              <span key={i} className="h-4 w-4 rounded-[4px]" style={{ background: c }} />
+            {['finder', 'safari', 'chrome', 'music'].map((id) => (
+              <img
+                key={id}
+                src={`/icons/${id}.svg`}
+                alt=""
+                draggable={false}
+                loading="lazy"
+                className="h-4 w-4 rounded-[4px] shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
+              />
             ))}
           </div>
         </div>

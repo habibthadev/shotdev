@@ -4,6 +4,19 @@ import { StudioPanel } from '@/components/StudioPanel'
 import { StudioPreview } from '@/components/StudioPreview'
 
 export const Route = createFileRoute('/studio')({
+  head: () => ({
+    meta: [
+      { title: 'Studio — shotdev' },
+      { name: 'description', content: 'Paste any link, pick a wallpaper and browser frame, and capture a pixel-perfect macOS desktop scene in seconds.' },
+      { property: 'og:title', content: 'Studio — shotdev' },
+      { property: 'og:description', content: 'Paste any link, pick a wallpaper and browser frame, and capture a pixel-perfect macOS desktop scene in seconds.' },
+      { property: 'og:image', content: '/og-studio.png' },
+      { property: 'og:url', content: '/studio' },
+      { name: 'twitter:title', content: 'Studio — shotdev' },
+      { name: 'twitter:description', content: 'Paste any link, pick a wallpaper and browser frame, and capture a pixel-perfect macOS desktop scene in seconds.' },
+    ],
+    links: [{ rel: 'canonical', href: '/studio' }],
+  }),
   component: StudioPage,
 })
 

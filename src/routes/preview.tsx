@@ -5,6 +5,19 @@ import { useScreenshotStore } from '@/store/screenshot.store'
 import { downloadImage, copyToClipboard } from '@/lib/download'
 
 export const Route = createFileRoute('/preview')({
+  head: () => ({
+    meta: [
+      { title: 'Preview — shotdev' },
+      { name: 'description', content: 'Review and download your macOS desktop scene — exported as PNG, JPEG, or WebP.' },
+      { property: 'og:title', content: 'Preview — shotdev' },
+      { property: 'og:description', content: 'Review and download your macOS desktop scene — exported as PNG, JPEG, or WebP.' },
+      { property: 'og:image', content: '/og-preview.png' },
+      { property: 'og:url', content: '/preview' },
+      { name: 'twitter:title', content: 'Preview — shotdev' },
+      { name: 'twitter:description', content: 'Review and download your macOS desktop scene — exported as PNG, JPEG, or WebP.' },
+    ],
+    links: [{ rel: 'canonical', href: '/preview' }],
+  }),
   component: PreviewPage,
 })
 
