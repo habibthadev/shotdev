@@ -2,6 +2,12 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { House } from '@phosphor-icons/react'
 
 export const Route = createFileRoute('/$splat')({
+  head: () => ({
+    meta: [
+      { title: 'Page Not Found — shotdev' },
+      { name: 'robots', content: 'noindex, nofollow' },
+    ],
+  }),
   component: NotFoundPage,
 })
 

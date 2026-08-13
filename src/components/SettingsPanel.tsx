@@ -2,8 +2,8 @@ import { Select } from '@/components/ui/Select'
 import { Input } from '@/components/ui/Input'
 import { Toggle } from '@/components/ui/Toggle'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
-import { useScreenshotStore } from '@/store/screenshot.store'
-import type { ViewportPreset, ScreenshotFormat } from '@/store/screenshot.store'
+import { useScreenshotStore, WALLPAPERS, wallpaperSrc } from '@/store/screenshot.store'
+import type { ViewportPreset, ScreenshotFormat, WallpaperId } from '@/store/screenshot.store'
 
 const presetOptions = [
   { value: '1280x800', label: '1280×800' },
@@ -27,9 +27,17 @@ const formatOptions = [
   { value: 'webp', label: 'WebP' },
 ]
 
+const scaleOptions = [
+  { value: '1', label: '1×' },
+  { value: '2', label: '2×' },
+  { value: '3', label: '3×' },
+]
+
 export function SettingsPanel() {
   const settings = useScreenshotStore((s) => s.settings)
+  const wallpaperId = useScreenshotStore((s) => s.wallpaperId)
   const updateSettings = useScreenshotStore((s) => s.updateSettings)
+  const setWallpaper = useScreenshotStore((s) => s.setWallpaper)
 
   const handlePresetChange = (preset: string) => {
     const typedPreset = preset as ViewportPreset
@@ -89,6 +97,15 @@ export function SettingsPanel() {
           />
         </SettingRow>
 
+        <SettingRow label="Resolution">
+          <Select
+            options={scaleOptions}
+            value={String(settings.scale)}
+            onChange={(v) => updateSettings({ scale: Number(v) })}
+            className="w-24"
+          />
+        </SettingRow>
+
         <SettingRow label="Dark Mode">
           <Toggle
             checked={settings.darkMode}
@@ -104,6 +121,55 @@ export function SettingsPanel() {
             className="w-24"
           />
         </SettingRow>
+      </div>
+
+      <div className="h-px bg-[var(--color-separator)]" />
+
+      <div>
+        <div className="mb-2 flex items-baseline justify-between">
+          <label className="block text-[13px] font-medium text-[var(--color-label-secondary)]">
+            Desktop Wallpaper
+          </label>
+          <span className="text-[11px] text-[var(--color-label-tertiary)]">
+            auto light/dark
+          </span>
+        </div>
+        <div className="grid grid-cols-5 gap-1.5">
+          {WALLPAPERS.map((w) => (
+            <button
+              key={w.id}
+              type="button"
+              onClick={() => setWallpaper(w.id as WallpaperId)}
+              title={`${w.name}${settings.darkMode ? ' (dark)' : ' (light)'}`}
+              className="group relative aspect-[16/10] overflow-hidden rounded-[7px] ring-1 ring-black/10 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-system-blue)]"
+            >
+              <img
+                src={wallpaperSrc(w.id as WallpaperId, settings.darkMode)}
+                alt={w.name}
+                draggable={false}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+              />
+              <span
+                className={`absolute inset-0 rounded-[7px] ring-2 transition-all duration-150 ${
+                  wallpaperId === w.id
+                    ? 'ring-[var(--color-system-blue)] ring-inset'
+                    : 'ring-transparent group-hover:ring-black/20 group-hover:ring-inset'
+                }`}
+              />
+              {wallpaperId === w.id && (
+                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-system-blue)] shadow-sm">
+                  <svg width="8" height="8" viewBox="0 0 10 10" fill="none" aria-hidden>
+                    <path d="M2 5.2 4.2 7.4 8 3" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] leading-relaxed text-[var(--color-label-tertiary)]">
+          The macOS backdrop behind your shot. Dark Mode switches wallpaper variants automatically.
+        </p>
       </div>
     </div>
   )

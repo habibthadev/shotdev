@@ -1,117 +1,151 @@
-import { useMemo } from 'react'
-import { Camera, Globe } from '@phosphor-icons/react'
+import { useState, useCallback } from 'react'
+import {
+  Camera,
+  Globe,
+  DownloadSimple,
+  Copy,
+  Check,
+  Warning,
+  ArrowsClockwise,
+  ImageSquare,
+} from '@phosphor-icons/react'
 import { useScreenshotStore } from '@/store/screenshot.store'
-import { SafariChrome } from '@/components/chrome/SafariChrome'
-import { ChromeChrome } from '@/components/chrome/ChromeChrome'
-import { FirefoxChrome } from '@/components/chrome/FirefoxChrome'
-import { ArcChrome } from '@/components/chrome/ArcChrome'
-import { MinimalChrome } from '@/components/chrome/MinimalChrome'
-
-const chromeComponents = {
-  safari: SafariChrome,
-  chrome: ChromeChrome,
-  firefox: FirefoxChrome,
-  arc: ArcChrome,
-  minimal: MinimalChrome,
-}
+import { downloadImage, copyToClipboard } from '@/lib/download'
 
 export function StudioPreview() {
-  const browserId = useScreenshotStore((s) => s.browserId)
   const url = useScreenshotStore((s) => s.url)
   const settings = useScreenshotStore((s) => s.settings)
+  const status = useScreenshotStore((s) => s.status)
+  const result = useScreenshotStore((s) => s.result)
+  const error = useScreenshotStore((s) => s.error)
+  const capture = useScreenshotStore((s) => s.capture)
 
-  const ChromeComponent = chromeComponents[browserId]
+  const [copySuccess, setCopySuccess] = useState(false)
 
-  const placeholderContent = useMemo(() => (
-    <PlaceholderContent url={url} isDark={settings.darkMode} />
-  ), [url, settings.darkMode])
+  const handleDownload = useCallback(() => {
+    if (!result) return
+    downloadImage(result, settings.format)
+  }, [result, settings.format])
 
-  const availableWidth = typeof window !== 'undefined' 
-    ? Math.max(window.innerWidth - 400, 320)
-    : settings.width
+  const handleCopy = useCallback(async () => {
+    if (!result) return
+    try {
+      await copyToClipboard(result)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch {}
+  }, [result])
 
-  const chromeProps = {
-    url: url || 'https://example.com',
-    isDark: settings.darkMode,
-    optimisticContent: placeholderContent,
-    width: Math.min(settings.width, availableWidth),
-    height: settings.height,
-  }
+  const availableWidth =
+    typeof window !== 'undefined' ? Math.max(window.innerWidth - 400, 320) : settings.width
+
+  const sceneWidth = result ? Math.min(result.width, availableWidth) : 0
+  const sceneHeight = result ? (result.height / result.width) * sceneWidth : 0
 
   return (
-    <main className="flex-1 relative bg-[var(--color-background-secondary)] overflow-hidden">
-      <div className="h-full flex flex-col items-center justify-center p-4 sm:p-6 lg:p-10 overflow-auto">
-        <div className="relative w-full max-w-full flex items-center justify-center">
-          <div className="animate-fade-in">
-            <ChromeComponent {...chromeProps} />
+    <main className="relative min-h-0 flex-1 overflow-hidden min-h-[60dvh] md:min-h-0">
+      <div className="flex h-full flex-col items-center justify-center overflow-auto p-4 sm:p-6 lg:p-10">
+        {status === 'loading' && (
+          <div className="animate-fade-in flex flex-col items-center gap-4">
+            <div className="relative flex h-14 w-14 items-center justify-center">
+              <span className="absolute inset-0 animate-ping rounded-full bg-[var(--color-system-blue)]/20" />
+              <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-system-blue)] shadow-[0_8px_24px_rgba(0,122,255,0.35)]">
+                <Camera size={26} weight="fill" className="animate-pulse text-white" />
+              </span>
+            </div>
+            <div className="text-center">
+              <p className="text-[15px] font-semibold text-[var(--color-label-primary)]">
+                Rendering your scene…
+              </p>
+              <p className="mt-1 text-[13px] text-[var(--color-label-secondary)]">
+                Loading the site, then framing it in macOS
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="mt-6 flex items-center gap-3 px-4 sm:px-5 py-3 bg-white/90 backdrop-blur-xl border border-[var(--color-separator)] rounded-full shadow-sm">
-          <Camera size={18} weight="fill" className="text-[var(--color-system-blue)]" />
-          <span className="text-[13px] sm:text-[14px] font-medium text-[var(--color-label-primary)] text-center">
-            <span className="hidden sm:inline">Enter a URL and capture to see your screenshot</span>
-            <span className="sm:hidden">Enter URL to capture</span>
-          </span>
-        </div>
+        {status === 'success' && result && (
+          <div className="animate-fade-in flex flex-col items-center">
+            <img
+              src={`data:image/${result.format};base64,${result.image}`}
+              alt={`Screenshot of ${result.url}`}
+              draggable={false}
+              style={{ width: `${sceneWidth}px`, height: `${sceneHeight}px` }}
+              className="max-w-full rounded-xl border border-[var(--color-separator)] bg-white shadow-[0_24px_64px_rgba(0,0,0,0.18),0_4px_16px_rgba(0,0,0,0.08)] select-none"
+            />
+            <div className="mt-5 flex items-center gap-1 rounded-full border border-[var(--color-separator)] bg-white p-1.5 shadow-sm">
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-medium text-[var(--color-label-primary)] transition-colors hover:bg-[var(--color-fill-secondary)] sm:px-3.5"
+              >
+                {copySuccess ? (
+                  <Check size={16} weight="bold" className="text-[var(--color-system-green)]" />
+                ) : (
+                  <Copy size={16} weight="bold" />
+                )}
+                <span>{copySuccess ? 'Copied' : 'Copy'}</span>
+              </button>
+              <div className="h-5 w-px bg-[var(--color-separator)]" />
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 rounded-full bg-[var(--color-system-blue)] px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-[0_2px_10px_rgba(0,122,255,0.35)] transition-colors hover:bg-[var(--color-system-blue-hover)] sm:px-4"
+              >
+                <DownloadSimple size={16} weight="bold" />
+                <span>Save to device</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="max-w-md rounded-2xl border border-[var(--color-separator)] bg-white px-8 py-6 text-center shadow-[0_16px_48px_rgba(0,0,0,0.08)]">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-system-red)]/10">
+              <Warning size={24} weight="fill" className="text-[var(--color-system-red)]" />
+            </div>
+            <h2 className="mt-4 text-[19px] font-semibold text-[var(--color-label-primary)]">
+              Generation Failed
+            </h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-[var(--color-label-secondary)]">
+              {error}
+            </p>
+            <button
+              onClick={() => capture()}
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--color-system-blue)] px-5 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-[var(--color-system-blue-hover)]"
+            >
+              <ArrowsClockwise size={16} weight="bold" />
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {status === 'idle' && (
+          <div className="animate-fade-in flex max-w-sm flex-col items-center text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--color-separator)] bg-white text-[var(--color-system-blue)] shadow-sm">
+              <ImageSquare size={30} weight="duotone" />
+            </div>
+            <h2 className="mt-5 text-[17px] font-semibold text-[var(--color-label-primary)]">
+              {url ? 'Ready to generate' : 'Drop a link to get started'}
+            </h2>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--color-label-secondary)]">
+              {url
+                ? `We'll capture ${(() => {
+                    try {
+                      return new URL(url).hostname
+                    } catch {
+                      return 'your link'
+                    }
+                  })()} and wrap it in a full macOS desktop scene.`
+                : 'Paste a link on the left, pick your theme, then hit Generate.'}
+            </p>
+            {url && (
+              <div className="mt-4 flex items-center gap-2 rounded-full border border-[var(--color-separator)] bg-white px-3.5 py-2 text-[12px] font-medium text-[var(--color-label-secondary)] shadow-sm">
+                <Globe size={14} weight="fill" className="text-[var(--color-system-blue)]" />
+                <span className="max-w-52 truncate">{url}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </main>
-  )
-}
-
-function PlaceholderContent({ url, isDark }: { url: string; isDark: boolean }) {
-  const hasUrl = url && url.length > 0
-
-  if (!hasUrl) {
-    return (
-      <div className={`w-full h-full flex flex-col items-center justify-center p-6 ${isDark ? 'bg-[#1c1c1e]' : 'bg-[#f5f5f7]'}`}>
-        <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${isDark ? 'bg-[#2c2c2e]' : 'bg-white'} shadow-lg flex items-center justify-center`}>
-          <Globe size={32} weight="duotone" className={isDark ? 'text-[#8e8e93]' : 'text-[#86868b]'} />
-        </div>
-        <p className={`mt-4 text-[14px] sm:text-[15px] font-medium ${isDark ? 'text-white/80' : 'text-[var(--color-label-primary)]'} text-center px-4`}>
-          Enter a URL to get started
-        </p>
-        <p className={`mt-1 text-[12px] sm:text-[13px] ${isDark ? 'text-[#8e8e93]' : 'text-[var(--color-label-secondary)]'} text-center px-4`}>
-          Your preview will appear here
-        </p>
-      </div>
-    )
-  }
-
-  const domain = (() => {
-    try {
-      return new URL(url).hostname
-    } catch {
-      return url
-    }
-  })()
-
-  return (
-    <div className={`w-full h-full ${isDark ? 'bg-[#1c1c1e]' : 'bg-[#fafafa]'}`}>
-      <div className="p-4 sm:p-6">
-        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${isDark ? 'bg-white/10' : 'bg-black/5'} flex items-center justify-center flex-shrink-0`}>
-            <Globe size={24} className={isDark ? 'text-white/40' : 'text-black/30'} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className={`h-3 sm:h-4 w-24 sm:w-32 ${isDark ? 'bg-white/10' : 'bg-black/5'} rounded`} />
-            <div className={`h-2 sm:h-3 w-16 sm:w-24 ${isDark ? 'bg-white/5' : 'bg-black/[0.03]'} rounded mt-2`} />
-          </div>
-        </div>
-        <div className={`h-24 sm:h-32 rounded-lg ${isDark ? 'bg-white/5' : 'bg-black/[0.03]'}`} />
-        <div className="flex flex-col gap-2 sm:gap-3 mt-4 sm:mt-6">
-          <div className={`h-2 sm:h-3 rounded ${isDark ? 'bg-white/10' : 'bg-black/5'} w-full`} />
-          <div className={`h-2 sm:h-3 rounded ${isDark ? 'bg-white/10' : 'bg-black/5'} w-4/5`} />
-          <div className={`h-2 sm:h-3 rounded ${isDark ? 'bg-white/10' : 'bg-black/5'} w-3/5`} />
-        </div>
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl ${isDark ? 'bg-white/10' : 'bg-black/5'} backdrop-blur-sm max-w-[90%]`}>
-          <p className={`text-[13px] sm:text-[14px] font-medium ${isDark ? 'text-white/60' : 'text-black/40'} truncate`}>
-            Preview: {domain}
-          </p>
-        </div>
-      </div>
-    </div>
   )
 }

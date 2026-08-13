@@ -6,11 +6,8 @@ services:
     plan: starter
     buildCommand: |
       pnpm install
-      npx playwright install --with-deps chromium
       pnpm build
-    startCommand: node dist/server/server.js
+    startCommand: node .output/server/index.mjs
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PLAYWRIGHT_BROWSERS_PATH
-        value: /opt/render/.cache/ms-playwright
