@@ -56,6 +56,25 @@ try {
   console.log(`skipping vercel static mirror: ${err.message}`)
 }
 
+try {
+  await readFile(join(vercelStatic, 'index.html'))
+  console.log('vercel static: index.html present')
+} catch (err) {
+  console.log(`WARNING: vercel static missing index.html: ${err.message}`)
+}
+
+const vercelConfigPath = join(rootDir, '.vercel', 'output', 'config.json')
+try {
+  const cfg = JSON.parse(await readFile(vercelConfigPath, 'utf8'))
+  if (cfg.overrides?.['index.html']) {
+    delete cfg.overrides['index.html']
+    await writeFile(vercelConfigPath, JSON.stringify(cfg, null, 2))
+    console.log('vercel config: dropped index.html override (root served via static index)')
+  }
+} catch (err) {
+  console.log(`note: could not patch vercel config: ${err.message}`)
+}
+
 const FONT_BOLD = await readFile(join(publicDir, 'fonts', 'SFPRODISPLAYBOLD.OTF'))
 const FONT_REGULAR = await readFile(join(publicDir, 'fonts', 'SFPRODISPLAYREGULAR.OTF'))
 const FONTS = [
