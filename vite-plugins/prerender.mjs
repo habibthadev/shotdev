@@ -1,4 +1,5 @@
 import { mkdir, cp, writeFile, readFile, readdir } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
@@ -76,18 +77,22 @@ try {
 }
 
 const functionsDir = join(rootDir, '.vercel', 'output', 'functions')
+const RUNTIME_PUBLIC = ['wallpaper', 'icons', 'fonts']
 try {
   const funcs = await readdir(functionsDir, { withFileTypes: true })
-  const wallpaperDir = join(rootDir, 'public', 'wallpaper')
   for (const entry of funcs) {
     if (!entry.isDirectory()) continue
-    const target = join(functionsDir, entry.name, 'public', 'wallpaper')
-    await mkdir(target, { recursive: true })
-    await cp(wallpaperDir, target, { recursive: true, force: true })
-    console.log(`bundled wallpaper into ${entry.name}`)
+    if (!existsSync(join(functionsDir, entry.name, '.vc-config.json'))) continue
+    for (const dir of RUNTIME_PUBLIC) {
+      const src = join(rootDir, 'public', dir)
+      const target = join(functionsDir, entry.name, 'public', dir)
+      await mkdir(target, { recursive: true })
+      await cp(src, target, { recursive: true, force: true })
+    }
+    console.log(`bundled public runtime assets into ${entry.name}`)
   }
 } catch (err) {
-  console.log(`note: could not bundle wallpaper into functions: ${err.message}`)
+  console.log(`note: could not bundle runtime assets into functions: ${err.message}`)
 }
 
 const FONT_BOLD = await readFile(join(publicDir, 'fonts', 'SFPRODISPLAYBOLD.OTF'))
