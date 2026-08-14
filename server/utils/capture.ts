@@ -87,11 +87,8 @@ export async function captureScene(data: ScreenshotInput) {
     })
     const page = await context.newPage()
 
-    await page.goto(data.url, { waitUntil: 'load', timeout: 30_000 })
-    await new Promise((r) => setTimeout(r, 1000 + data.delay))
-    try {
-      await page.evaluate(() => (document as Document & { fonts: FontFaceSet }).fonts.ready)
-    } catch {}
+    await page.goto(data.url, { waitUntil: 'domcontentloaded', timeout: 10_000 })
+    await new Promise((r) => setTimeout(r, 350 + data.delay))
 
     const pageMeta = await page
       .evaluate(() => {

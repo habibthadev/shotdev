@@ -9,7 +9,7 @@ export default defineNitroConfig({
   vercel: {
     functions: {
       maxDuration: 30,
-      memory: 1024,
+      memory: 768,
       architecture: 'x86_64',
     },
     config: {
