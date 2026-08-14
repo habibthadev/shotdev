@@ -70,6 +70,25 @@ async function closeContextSafely(context: BrowserContext | null): Promise<void>
 }
 
 export async function captureScene(data: ScreenshotInput) {
+  let lastError: Error | null = null
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await captureOnce(data)
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Failed to capture screenshot.')
+      const msg = lastError.message.toLowerCase()
+      const transient =
+        msg.includes('crashed') ||
+        msg.includes('closed') ||
+        msg.includes('context destroyed') ||
+        msg.includes('too long')
+      if (!transient || attempt === 1) throw lastError
+    }
+  }
+  throw lastError
+}
+
+async function captureOnce(data: ScreenshotInput) {
   let context: BrowserContext | null = null
   let sceneContext: BrowserContext | null = null
 
@@ -89,6 +108,28 @@ export async function captureScene(data: ScreenshotInput) {
 
     await page.goto(data.url, { waitUntil: 'domcontentloaded', timeout: 10_000 })
     await new Promise((r) => setTimeout(r, 350 + data.delay))
+
+    const isSpa = await page
+      .evaluate(() => {
+        const w = window as unknown as Record<string, unknown> & {
+          __NUXT__?: unknown
+          __NEXT_DATA__?: unknown
+          __remixContext?: unknown
+          __vue_app__?: unknown
+        }
+        return Boolean(
+          w.__NUXT__ ||
+            w.__NEXT_DATA__ ||
+            w.__remixContext ||
+            w.__vue_app__ ||
+            document.querySelector('#root, #__next, #app, #mount'),
+        )
+      })
+      .catch(() => false)
+    if (isSpa) {
+      await page.waitForLoadState('networkidle', { timeout: 4000 }).catch(() => {})
+      await new Promise((r) => setTimeout(r, 250))
+    }
 
     const pageMeta = await page
       .evaluate(() => {
