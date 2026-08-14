@@ -1,4 +1,4 @@
-import { mkdir, cp, writeFile, readFile } from 'node:fs/promises'
+import { mkdir, cp, writeFile, readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
@@ -73,6 +73,21 @@ try {
   }
 } catch (err) {
   console.log(`note: could not patch vercel config: ${err.message}`)
+}
+
+const functionsDir = join(rootDir, '.vercel', 'output', 'functions')
+try {
+  const funcs = await readdir(functionsDir, { withFileTypes: true })
+  const wallpaperDir = join(rootDir, 'public', 'wallpaper')
+  for (const entry of funcs) {
+    if (!entry.isDirectory()) continue
+    const target = join(functionsDir, entry.name, 'public', 'wallpaper')
+    await mkdir(target, { recursive: true })
+    await cp(wallpaperDir, target, { recursive: true, force: true })
+    console.log(`bundled wallpaper into ${entry.name}`)
+  }
+} catch (err) {
+  console.log(`note: could not bundle wallpaper into functions: ${err.message}`)
 }
 
 const FONT_BOLD = await readFile(join(publicDir, 'fonts', 'SFPRODISPLAYBOLD.OTF'))
